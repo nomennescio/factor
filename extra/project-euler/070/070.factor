@@ -29,7 +29,7 @@ IN: project-euler.070
 ! --------
 
 ! For n/φ(n) to be minimised, φ(n) must be as close to n as possible; that is,
-! we want to maximise φ(n). The minimal solution for n/φ(n) would be if n was
+! we want to maximize φ(n). The minimal solution for n/φ(n) would be if n was
 ! prime giving n/(n-1) but since n-1 never is a permutation of n it cannot be
 ! prime.
 
@@ -60,8 +60,8 @@ IN: project-euler.070
 PRIVATE>
 
 : euler070 ( -- answer )
-   likely-prime-factors 2 all-combinations [ n-and-phi ] map
-   [ fit-requirements? ] filter minimum-ratio ;
+    likely-prime-factors 2 all-combinations [ n-and-phi ] map
+    [ fit-requirements? ] filter minimum-ratio ;
 
 ! [ euler070 ] 100 ave-time
 ! 379 ms ave run time - 1.15 SD (100 trials)

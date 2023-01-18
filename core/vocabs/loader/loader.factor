@@ -1,7 +1,7 @@
 ! Copyright (C) 2007, 2010 Eduardo Cavazos, Slava Pestov.
 ! See http://factorcode.org/license.txt for BSD license.
 USING: accessors arrays assocs combinators continuations
-definitions init io io.files io.pathnames kernel make namespaces
+definitions io io.files io.pathnames kernel make namespaces
 parser sequences sets splitting strings vocabs words ;
 IN: vocabs.loader
 
@@ -22,7 +22,7 @@ STARTUP-HOOK: [
 ]
 
 : add-vocab-root ( root -- )
-    trim-tail-separators dup vocab-roots get ?adjoin
+    absolute-path trim-tail-separators dup vocab-roots get ?adjoin
     [ add-vocab-root-hook get-global call( root -- ) ] [ drop ] if ;
 
 SYMBOL: root-cache

@@ -19,8 +19,8 @@ IN: colors.flex-hex
 
 : hex-rgb ( array -- array' )
     [
-        8 short tail*
-        2 short head
+        8 index-or-length tail*
+        2 index-or-length head
         2 CHAR: 0 pad-head
     ] map ;
 

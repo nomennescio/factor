@@ -117,7 +117,7 @@ M: word (print-input)
     output>> [ (print-input) ] with-output-stream* ;
 
 : interactor-continue ( obj interactor -- )
-    mailbox>> mailbox-put ;
+    [ mailbox>> mailbox-put ] [ scroll>bottom ] bi ;
 
 : interactor-finish ( interactor -- )
     [ history>> history-add ] keep
@@ -131,7 +131,7 @@ M: word (print-input)
     ] unless drop ;
 
 : evaluate-input ( interactor -- )
-    dup interactor-busy? [ drop ] [
+    dup interactor-busy? [ scroll>bottom ] [
         [ control-value ] keep interactor-continue
     ] if ;
 
@@ -162,7 +162,7 @@ M:: interactor stream-read-unsafe ( n buf interactor -- count )
     n [ 0 ] [
         drop
         interactor interactor-read dup [ join-lines ] when
-        n short [ head-slice 0 buf copy ] keep
+        n index-or-length [ head-slice 0 buf copy ] keep
     ] if-zero ;
 
 M: interactor stream-read1
@@ -478,6 +478,7 @@ listener-gadget "touchbar" f {
     { f refresh-all }
     { f com-auto-use }
     { f com-help }
+    { f show-error-list }
 } define-command-map
 
 listener-gadget "file-drop" "Files can be drag-and-dropped onto the listener."

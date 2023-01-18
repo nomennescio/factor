@@ -10,8 +10,9 @@ generic.math generic.parser generic.standard hash-sets
 hashtables hashtables.identity init io.pathnames kernel lexer
 locals.errors locals.parser macros math memoize namespaces
 parser quotations sbufs sequences slots source-files splitting
-strings strings.parser vectors vocabs.loader vocabs.parser words
-words.alias words.constant words.symbol ;
+strings strings.parser strings.parser.private vectors
+vocabs.loader vocabs.parser words words.alias words.constant
+words.symbol ;
 IN: bootstrap.syntax
 
 ! These words are defined as a top-level form, instead of with
@@ -296,21 +297,21 @@ IN: bootstrap.syntax
     ">>>>>>" [ version-control-merge-conflict ] define-core-syntax
 
     "'[" [
-         t in-fry? [ parse-quotation ] with-variable fry append!
+        t in-fry? [ parse-quotation ] with-variable fry append!
     ] define-core-syntax
 
     "'{" [
-         t in-fry? [ \ } parse-until >array ] with-variable fry append!
+        t in-fry? [ \ } parse-until >array ] with-variable fry append!
     ] define-core-syntax
 
     "'HS{" [
-         t in-fry? [ \ } parse-until >array ] with-variable fry
-         [ >hash-set ] compose append!
+        t in-fry? [ \ } parse-until >array ] with-variable fry
+        [ >hash-set ] compose append!
     ] define-core-syntax
 
     "'H{" [
-         t in-fry? [ \ } parse-until >array ] with-variable fry
-         [ parse-hashtable ] compose append!
+        t in-fry? [ \ } parse-until >array ] with-variable fry
+        [ parse-hashtable ] compose append!
     ] define-core-syntax
 
     "_" [

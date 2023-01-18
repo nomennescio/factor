@@ -12,25 +12,23 @@ IN: mason.release.sign
         [ "factor/" prepend-path ] dip prepend-path
     ] [
         ! Not in build, make dir: "resource:factor.com"
-        "resource:" prepend-path normalize-path
-    ] if* ;
+        "resource:" prepend-path
+    ] if* normalize-path ;
 
 HOOK: cert-path os ( -- path/f )
 
 M: object cert-path f ;
 
-M: macosx cert-path
-    home "config/mac_app.cer" append-path ;
+M: macosx cert-path home "config/mac_app.cer" append-path ;
 
-M: windows cert-path
-    home "config/FactorSPC.pfx" append-path ;
+M: windows cert-path home "config/FactorSPC.pfx" append-path ;
 >>
 
 HOOK: sign-factor-app os ( -- )
 
 M: object sign-factor-app ;
 
-M:: macosx sign-factor-app ( -- )
+M: macosx sign-factor-app
     ${
         "codesign" "--force" "--sign"
         "Developer ID Application"
@@ -44,6 +42,7 @@ M:: windows sign-factor-app ( -- )
         [
             ${
                 "signtool" "sign"
+                "/fd" "sha256"
                 "/v"
                 "/f" cert-path
             }
@@ -57,7 +56,7 @@ M: object sign-archive drop ;
 ! Sign the .dmg on macOS as well to avoid Gatekeeper marking
 ! the xattrs as quarantined.
 ! https://github.com/factor/factor/issues/1896
-M: macosx sign-archive ( path -- )
+M: macosx sign-archive
     ${
         "codesign" "--force" "--sign"
         "Developer ID Application"

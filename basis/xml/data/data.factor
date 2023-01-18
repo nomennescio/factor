@@ -85,6 +85,9 @@ C: <contained> contained
 TUPLE: comment { text string } ;
 C: <comment> comment
 
+TUPLE: cdata { text string } ;
+C: <cdata> cdata
+
 TUPLE: directive ;
 
 TUPLE: element-decl < directive
@@ -202,7 +205,7 @@ CONSULT: name xml body>> ;
 PRIVATE>
 
 M: xml clone
-   xml clone-slots ;
+    xml clone-slots ;
 
 M: xml like
     swap dup xml? [ nip ] [
@@ -220,7 +223,7 @@ TUPLE: unescaped string ;
 C: <unescaped> unescaped
 
 UNION: xml-data
-    tag comment string directive instruction unescaped ;
+    tag comment cdata string directive instruction unescaped ;
 
 TUPLE: xml-chunk seq ;
 C: <xml-chunk> xml-chunk

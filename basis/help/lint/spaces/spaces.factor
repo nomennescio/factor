@@ -18,7 +18,7 @@ IN: help.lint.spaces
             first [
                 { [ CHAR: space = ] [ CHAR: " = ] } 1||
             ] trim-head
-            "  " swap subseq?
+            "  " subseq-of?
         ] filter
         [ drop ] [
             swap <pathname> .

@@ -1,7 +1,7 @@
 ! Copyright (C) 2021 Doug Coleman.
 ! See http://factorcode.org/license.txt for BSD license.
-USING: accessors assocs continuations kernel sequences
-vocabs vocabs.parser ;
+USING: accessors assocs classes.tuple continuations kernel sequences
+slots.private vocabs vocabs.parser ;
 IN: fixups
 
 CONSTANT: vocab-renames {
@@ -39,6 +39,17 @@ CONSTANT: word-renames {
     { "read-json-objects" { "json.reader:read-json" "0.99" } }
     { "init-namespaces" { "namespaces:init-namestack" "0.99" } }
     { "iota" { "sequences:<iota>" ".98" } }
+    { "git-checkout-existing-branch" { "git-checkout-existing" "0.99" } }
+    { "git-checkout-existing-branch*" { "git-checkout-existing*" "0.99" } }
+    { "tags" { "chloe-tags" "0.99" } }
+    { "(each)" { "sequence-operator" "0.99" } }
+    { "(each-integer)" { "each-integer-from" "0.99" } }
+    { "(find-integer)" { "find-integer-from" "0.99" } }
+    { "(all-integers?)" { "all-integers-from?" "0.99" } }
+    { "short" { "index-or-length" "0.99" } }
+    { "map-integers" { "map-integers-as" "0.99" } }
+    { "deep-subseq?" { "deep-subseq-of?" "0.99" } }
+    { "overtomorrow" { "overmorrow" "0.99" } }
 }
 
 : compute-assoc-fixups ( continuation name assoc -- seq )
@@ -56,7 +67,8 @@ CONSTANT: word-renames {
 GENERIC: compute-fixups ( continuation error -- seq )
 
 M: object compute-fixups
-    [ error>> compute-fixups ] [ 3drop { } ] recover ;
+    "error" over ?offset-of-slot
+    [ slot compute-fixups ] [ 2drop { } ] if* ;
 
 M: f compute-fixups 2drop { } ;
 

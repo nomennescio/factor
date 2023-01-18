@@ -32,6 +32,9 @@ CONSTANT: stylesheet
         { table-content-style
             H{ { wrap-margin $[ default-font-size 83 * ] } }
         }
+        { list-content-style
+            H{ { wrap-margin $[ default-font-size 83 * ] } }
+        }
         { list-style
             H{
                 { table-gap ${ default-font-size 5/6 *
@@ -75,7 +78,7 @@ CONSTANT: stylesheet
     ] make-pane page-theme ;
 
 : $slide ( element -- )
-    unclip $title $divider $list ;
+    unclip last-element off $title $divider last-element off $list ;
 
 TUPLE: slides < book ;
 

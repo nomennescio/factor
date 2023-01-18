@@ -18,7 +18,7 @@ ARTICLE: "grouping" "Groups and clumps"
 { $list
     { "With groups, the subsequences form the original sequence when concatenated:"
         { $example
-            "USING: grouping ;"
+            "USING: grouping prettyprint ;"
             "{ 1 2 3 4 } 2 group ."
             "{ { 1 2 } { 3 4 } }"
         }
@@ -103,7 +103,7 @@ HELP: <groups>
 HELP: clumps
 { $class-description "Instances are virtual sequences whose elements are overlapping fixed-length subsequences of an underlying sequence. Clumps are mutable and resizable if the underlying sequence is mutable and resizable, respectively."
 $nl
-"New clumps are created by calling " { $link <clumps> } " and " { $link <clumps> } "." } ;
+"New clumps are created by calling " { $link <clumps> } "." } ;
 
 HELP: circular-clumps
 { $class-description "Instances are virtual sequences whose elements are overlapping fixed-length subsequences of an underlying sequence, beginning with every element in the original sequence and wrapping around its end. Circular clumps are mutable and resizable if the underlying sequence is mutable and resizable, respectively."

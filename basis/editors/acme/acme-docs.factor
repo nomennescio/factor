@@ -14,16 +14,16 @@ $nl
 { $see-also "editor" } ;
 
 HELP: plan9-path
-$description
+{ $values { "path" "a pathname string" } }
+{ $description
 "Find the local installation of Plan9 from user space."
 "The " { $link plan9-path } " word will try to locate your Plan9"
 " installation. In order of preference this word checks:"
 $nl
-{
- $list
- { "The " { $link plan9-path } " global" }
- "The PLAN9 environment variable"
+{ $list
+  { "The " { $link plan9-path } " global" }
+  "The PLAN9 environment variable"
 }
 $nl
 "Finally, if neither is available, falls back to "
-"/usr/local/plan9, the default installation path." ;
+"/usr/local/plan9, the default installation path." } ;

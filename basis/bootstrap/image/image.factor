@@ -494,6 +494,13 @@ M: quotation prepare-object
     emit-words
     "Serializing JIT data..." print flush
     emit-jit-data
+! special-objects get ...
+! nl
+! "sub-primitives" print
+! sub-primitives get ...
+! \ c-to-factor of
+! 43 special-objects get set-at
+
     "Serializing global namespace..." print flush
     emit-global
     "Serializing singletons..." print flush

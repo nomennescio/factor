@@ -1,8 +1,9 @@
 ! Copyright (C) 2021 Doug Coleman.
 ! See http://factorcode.org/license.txt for BSD license.
-USING: accessors arrays combinators combinators.short-circuit
-generalizations kernel lexer make math modern modern.slices
-sequences sequences.extras shuffle splitting strings ;
+USING: accessors arrays assocs combinators
+combinators.short-circuit kernel make math modern modern.slices
+sequences sequences.extras shuffle combinators.extras splitting
+strings unicode ;
 IN: modern.html
 
 TUPLE: tag open name props close children ;
@@ -13,6 +14,13 @@ TUPLE: processing-instruction open target props close ;
         swap >>close
         swap >>props
         swap >>target
+        swap >>open ; inline
+
+TUPLE: embedded-language open payload close ;
+: <embedded-language> ( open payload close -- embedded-language )
+    embedded-language new
+        swap >>close
+        swap >>payload
         swap >>open ; inline
 
 TUPLE: doctype open close values ;
@@ -57,23 +65,12 @@ C: <squote> squote
 TUPLE: dquote payload ;
 C: <dquote> dquote
 
-: read-squote-string-payload ( n string -- n' string )
+: advance-squote-payload ( n string -- n' string )
     over [
         { CHAR: \\ CHAR: ' } slice-til-separator-inclusive {
-            { f [ drop ] }
+            { f [ to>> over string-expected-got-eof ] }
             { CHAR: ' [ drop ] }
-            { CHAR: \\ [ drop next-char-from drop read-string-payload ] }
-        } case
-    ] [
-        string-expected-got-eof
-    ] if ;
-
-: read-dquote-string-payload ( n string -- n' string )
-    over [
-        { CHAR: \\ CHAR: \" } slice-til-separator-inclusive {
-            { f [ drop ] }
-            { CHAR: \" [ drop ] }
-            { CHAR: \\ [ drop next-char-from drop read-string-payload ] }
+            { CHAR: \\ [ drop take-char drop advance-squote-payload ] }
         } case
     ] [
         string-expected-got-eof
@@ -81,17 +78,16 @@ C: <dquote> dquote
 
 :: read-string ( $n $string $char -- n' string payload )
     $n $string $char CHAR: ' =
-    [ read-squote-string-payload ]
-    [ read-dquote-string-payload ] if drop :> $n'
+    [ advance-squote-payload ]
+    [ advance-dquote-payload ] if drop :> $n'
     $n' $string
-    $n' [ $n $string string-expected-got-eof ] unless
     $n $n' 1 - $string <slice> ;
 
 : take-tag-name ( n string -- n' string tag )
     [ "\s\r\n/>" member? ] slice-until ;
 
 : read-value ( n string -- n' string value )
-    skip-whitespace next-char-from {
+    skip-whitespace take-char {
         { CHAR: ' [ CHAR: ' read-string >string <squote> ] }
         { CHAR: " [ CHAR: " read-string >string <dquote> ] }
         { CHAR: [ [ "[" throw ] }
@@ -100,7 +96,7 @@ C: <dquote> dquote
     } case ;
 
 : read-prop ( n string -- n' string prop/f closing/f )
-    skip-whitespace "\s\n\r\"'<=/>?" slice-til-either {
+    skip-whitespace "\s\n\r\t\"'<=/>?" slice-til-either {
         { CHAR: < [ "< error" throw ] }
         { CHAR: = [ 1 split-slice-back drop >string [ read-value ] dip swap 2array f ] }
         { CHAR: / [ ">" expect-and-span 2 split-slice-back [ >string f like ] bi@ ] }
@@ -111,40 +107,47 @@ C: <dquote> dquote
         { CHAR: \s [ >string f ] }
         { CHAR: \r [ >string f ] }
         { CHAR: \n [ >string f ] }
+        { CHAR: \t [ >string f ] }
         { f [ "efff" throw ] }
     } case ;
 
-: read-props* ( props n string -- n' string props closing )
-    read-prop [
-        [ [ reach push ] when* rot ] dip
+: read-props* ( n string props -- n' string props closing )
+    [ read-prop ] dip-2up [
+        [ [ over push ] when* ] dip
     ] [
-        [ reach push ] when* read-props*
+        [ over push ] when* read-props*
     ] if* ; inline recursive
 
 : read-props ( n string -- n' string props closing )
-    V{ } clone -rot read-props* ;
+    V{ } clone read-props* ;
 
 : read-processing-instruction ( n string opening -- n string processing-instruction )
     "?" expect-and-span >string
-    [ take-tag-name >string ] dip
-    [ read-props ] 2dip
-    spin rotd <processing-instruction> ;
+    [ take-tag-name >string ] dip-1up
+    [ read-props ] 2dip-2up
+    <processing-instruction> ;
 
 : read-doctype ( n string opening -- n string doctype/comment )
     "!" expect-and-span
     2over 2 peek-from "--" sequence= [
         "--" expect-and-span >string
-        [ "-->" slice-til-string [ >string ] bi@ ] dip -rot <comment>
+        [ "-->" slice-til-string [ >string ] bi@ ] dip-2up <comment>
     ] [
-        "DOCTYPE" expect-and-span
-        [ read-props ] dip
-        -rot <doctype>
+        "DOCTYPE" expect-and-span-insensitive
+        [ read-props ] dip-2up
+        <doctype>
     ] if ;
 
+: read-embedded-language ( n string opening -- n string embedded-language )
+    "%" expect-and-span >string
+    [ take-tag-name >string ] dip-1up append
+    [ "%>" slice-til-string [ >string ] bi@ ] dip-2up
+    <embedded-language> ;
+
 : read-open-tag ( n string opening -- n' string tag )
-    [ take-tag-name ] dip
-    [ read-props ] 2dip
-    swap 2swap dup ">" sequence= [
+    [ take-tag-name ] dip-1up
+    [ read-props ] 2dip-2up
+    dup ">" sequence= [
         <open-tag>
     ] [
         <self-close-tag>
@@ -155,10 +158,6 @@ C: <dquote> dquote
     [ take-tag-name ] dip span-slices
     ">" expect-and-span
     <close-tag> ;
-
-:: shorten* ( vector n -- seq )
-    vector n tail
-    n vector shorten ;
 
 : unclosed-open-tag? ( obj -- ? )
     { [ open-tag? ] [ close-tag>> not ] } 1&& ; inline
@@ -189,6 +188,7 @@ ERROR: unmatched-closing-tag-error stack tag ;
                     ] }
                 { CHAR: ! [ read-doctype ] }
                 { CHAR: ? [ read-processing-instruction ] }
+                { CHAR: % [ read-embedded-language ] }
                 [ drop read-open-tag ]
             } case
         ] }
@@ -251,3 +251,24 @@ M: string write-html % ;
 
 : html>string ( sequence -- string )
     [ [ write-html ] each ] "" make ;
+
+GENERIC#: walk-html 1 ( seq/tag quot -- )
+
+M: sequence walk-html [ walk-html ] curry each ;
+M: string walk-html call( obj -- ) ;
+M: doctype walk-html call( obj -- ) ;
+M: processing-instruction walk-html call( obj -- ) ;
+M: embedded-language walk-html call( obj -- ) ;
+M: open-tag walk-html [ call( obj -- ) ] 2keep [ children>> ] dip [ walk-html ] curry each ;
+M: self-close-tag walk-html [ call( obj -- ) ] 2keep [ children>> ] dip [ walk-html ] curry each ;
+M: comment walk-html call( obj -- ) ;
+
+: find-links ( seq -- links )
+    [
+        [
+            dup tag? [
+                props>> [ drop  >lower "href" = ] assoc-find
+                [ nip , ] [ 2drop ] if
+            ] [ drop ] if
+        ] walk-html
+    ] { } make [ payload>> ] map ;

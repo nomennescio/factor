@@ -87,11 +87,11 @@ PRIVATE>
 
 : qualified-named ( str -- seq/f )
     ":" split1 [
-        drop vocabs-matching keys [
+        vocabs-matching keys [
             [ vocab-words ] [ vocab-name ] bi ":" append
             [ over name>> append ] curry { } map>assoc
         ] map concat
-    ] [ drop f ] if* ;
+    ] [ drop f ] if ;
 
 : words-matching ( str -- seq )
     all-words named over qualified-named [ append ] unless-empty completions ;
@@ -131,6 +131,7 @@ PRIVATE>
     {
         "IN:" "USE:" "UNUSE:" "QUALIFIED:"
         "QUALIFIED-WITH:" "FROM:" "EXCLUDE:"
+        "REUSE:"
     } member? ; inline
 
 : complete-single-vocab? ( tokens -- ? )
@@ -145,7 +146,7 @@ PRIVATE>
     { ";" } split1-last [ ] [ ] ?if ;
 
 : complete-vocab-list? ( tokens -- ? )
-    chop-; 1 short head* "USING:" swap member? ;
+    chop-; 1 index-or-length head* "USING:" swap member? ;
 
 PRIVATE>
 

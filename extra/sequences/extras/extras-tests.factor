@@ -1,6 +1,5 @@
 USING: accessors arrays ascii io io.streams.string kernel make
-math math.vectors random sequences sequences.extras strings
-tools.test vectors vocabs ;
+math prettyprint sequences sequences.extras strings tools.test ;
 
 { V{ { 0 104 } { 2 108 } { 3 108 } } } [ "hello" [ even? ] find-all ] unit-test
 
@@ -163,6 +162,9 @@ tools.test vectors vocabs ;
 { V{ 0 4 } } [ { 5 3 2 10 5 } [ 5 = ] arg-where ] unit-test
 { { 2 1 0 4 3 } } [ { 5 3 2 10 5 } arg-sort ] unit-test
 
+{ 10 } [ { 4 3 2 1 } [ 10 * ] map-infimum ] unit-test
+{ 40 } [ { 4 3 2 1 } [ 10 * ] map-supremum ] unit-test
+
 { t } [ { 1 2 3 4 5 } 1 first= ] unit-test
 { t } [ { 1 2 3 4 5 } 2 second= ] unit-test
 { t } [ { 1 2 3 4 5 } 3 third= ] unit-test
@@ -286,3 +288,46 @@ tools.test vectors vocabs ;
 { { 1 3 } } [ 1 4 2 10 <iota> <step-slice> >array ] unit-test
 { { 1 3 } } [ 1 5 2 10 <iota> <step-slice> >array ] unit-test
 { { 1 3 5 } } [ 1 6 2 10 <iota> <step-slice> >array ] unit-test
+
+{ { 102 306 1530 } } [
+    { 2 3 5 } [ swap [ * ] [ 100 + ] if* ] map-with-previous
+] unit-test
+
+{ { } } [
+    { } [ nip ] map-with-previous
+] unit-test
+
+{ { -1 2 -3 4 -5 } } [ { 1 2 3 4 5 } [ odd? ] [ neg ] map-if ] unit-test
+
+{ { { 100 0 } { 200 1 } { 300 2 } { 400 3 } } } [
+    { 100 200 300 400 } <zip-index> >array
+] unit-test
+
+{ } [
+    { } [ - . ] each-prior
+] unit-test
+
+{ } [
+    { 5 16 42 103 } [ - . ] each-prior
+] unit-test
+
+{ { } } [
+    { } [ - ] map-prior
+] unit-test
+
+{ V{ 5 11 26 61 } } [
+    V{ 5 16 42 103 } [ - ] map-prior
+] unit-test
+
+{ V{ } } [
+    { } [ - ] V{ } map-prior-as
+] unit-test
+
+{ { 5 11 26 61 } } [
+    V{ 5 16 42 103 } [ - ] { } map-prior-as
+] unit-test
+
+{ f } [ 0 CHAR: a "foo" nth-index ] unit-test
+{ 0 } [ 0 CHAR: a "abba" nth-index ] unit-test
+{ 3 } [ 1 CHAR: a "abba" nth-index ] unit-test
+{ f } [ 2 CHAR: a "abba" nth-index ] unit-test

@@ -53,7 +53,7 @@ TUPLE: io-callback port thread ;
 C: <io-callback> io-callback
 
 : <completion-port> ( handle existing -- handle )
-     f 1 CreateIoCompletionPort dup win32-error=0/f ;
+    f 1 CreateIoCompletionPort dup win32-error=0/f ;
 
 : <master-completion-port> ( -- handle )
     INVALID_HANDLE_VALUE f <completion-port> ;
@@ -379,6 +379,7 @@ M: windows open-append
 
 M: windows home
     {
+        [ "HOME" os-env ]
         [ "HOMEDRIVE" os-env "HOMEPATH" os-env append-path ]
         [ "USERPROFILE" os-env ]
         [ my-documents ]

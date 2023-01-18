@@ -42,12 +42,12 @@ CONSTANT: transparent T{ rgba f 0.0 0.0 0.0 0.0 }
 
 <PRIVATE
 
-: parse-color ( line -- name color )
+: parse-line ( line -- name color )
     first4 [ [ string>number 255 /f ] tri@ 1.0 <rgba> ] dip swap ;
 
 : parse-colors ( lines -- assoc )
     [ "!" head? ] reject [
-        [ blank? ] split-when harvest 3 cut "-" join suffix parse-color
+        [ blank? ] split-when harvest 3 cut "-" join suffix parse-line
     ] H{ } map>assoc ;
 
 MEMO: colors ( -- assoc )
@@ -71,7 +71,20 @@ ERROR: invalid-hex-color hex ;
         [ drop invalid-hex-color ]
     } case <rgba> ;
 
+: component>hex ( f -- s )
+    255 * round >integer >hex
+    2 CHAR: 0 pad-head ;
+
+: (color>hex) ( seq -- hex )
+    [ component>hex ] map concat
+    "#" prepend ;
+
 PRIVATE>
+
+: color>hex ( color -- hex )
+    [ >rgba-components 4array ] [ opaque? ] bi
+    [ but-last ] when
+    (color>hex) ;
 
 : named-colors ( -- keys ) colors keys ;
 

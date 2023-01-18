@@ -131,6 +131,9 @@ GENERIC: (log2) ( x -- n ) foldable
 
 PRIVATE>
 
+: recursive-hashcode ( n obj quot -- code )
+    pick 0 <= [ 3drop 0 ] [ [ 1 - ] 2dip call ] if ; inline
+
 ERROR: log2-expects-positive x ;
 
 : log2 ( x -- n )
@@ -247,43 +250,31 @@ GENERIC: prev-float ( m -- n )
 : align ( m w -- n )
     1 - [ + ] keep bitnot bitand ; inline
 
-: (each-integer) ( ... i n quot: ( ... i -- ... ) -- ... )
+: each-integer-from ( ... from to quot: ( ... i -- ... ) -- ... )
     2over < [
         [ nip call ] 3keep
-        [ 1 + ] 2dip (each-integer)
+        [ 1 + ] 2dip each-integer-from
     ] [
         3drop
     ] if ; inline recursive
 
-: (find-integer) ( ... i n quot: ( ... i -- ... ? ) -- ... i/f )
-    2over < [
-        [ nip call ] 3keep roll
-        [ 2drop ]
-        [ [ 1 + ] 2dip (find-integer) ] if
-    ] [
-        3drop f
-    ] if ; inline recursive
-
-: (all-integers?) ( ... i n quot: ( ... i -- ... ? ) -- ... ? )
-    2over < [
-        [ nip call ] 3keep roll
-        [ [ 1 + ] 2dip (all-integers?) ]
-        [ 3drop f ] if
-    ] [
-        3drop t
-    ] if ; inline recursive
-
 : each-integer ( ... n quot: ( ... i -- ... ) -- ... )
-    [ 0 ] 2dip (each-integer) ; inline
+    [ 0 ] 2dip each-integer-from ; inline
 
 : times ( ... n quot: ( ... -- ... ) -- ... )
     [ drop ] prepose each-integer ; inline
 
-: find-integer ( ... n quot: ( ... i -- ... ? ) -- ... i/f )
-    [ 0 ] 2dip (find-integer) ; inline
+: find-integer-from ( ... i n quot: ( ... i -- ... ? ) -- ... i/f )
+    2over < [
+        [ nip call ] 3keep roll
+        [ 2drop ]
+        [ [ 1 + ] 2dip find-integer-from ] if
+    ] [
+        3drop f
+    ] if ; inline recursive
 
-: all-integers? ( ... n quot: ( ... i -- ... ? ) -- ... ? )
-    [ 0 ] 2dip (all-integers?) ; inline
+: find-integer ( ... n quot: ( ... i -- ... ? ) -- ... i/f )
+    [ 0 ] 2dip find-integer-from ; inline
 
 : find-last-integer ( ... n quot: ( ... i -- ... ? ) -- ... i/f )
     over 0 < [
@@ -295,3 +286,15 @@ GENERIC: prev-float ( m -- n )
             [ 1 - ] dip find-last-integer
         ] if
     ] if ; inline recursive
+
+: all-integers-from? ( ... from to quot: ( ... i -- ... ? ) -- ... ? )
+    2over < [
+        [ nip call ] 3keep roll
+        [ [ 1 + ] 2dip all-integers-from? ]
+        [ 3drop f ] if
+    ] [
+        3drop t
+    ] if ; inline recursive
+
+: all-integers? ( ... n quot: ( ... i -- ... ? ) -- ... ? )
+    [ 0 ] 2dip all-integers-from? ; inline

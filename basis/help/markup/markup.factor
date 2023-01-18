@@ -1,9 +1,9 @@
 ! Copyright (C) 2005, 2009 Slava Pestov.
 ! See http://factorcode.org/license.txt for BSD license.
 USING: accessors arrays assocs combinators compiler.units
-definitions.icons effects hashtables help.stylesheet help.topics
-io io.styles kernel make math namespaces present prettyprint
-prettyprint.stylesheet quotations see sequences
+definitions.icons effects english hashtables help.stylesheet
+help.topics io io.styles kernel make math namespaces present
+prettyprint prettyprint.stylesheet quotations see sequences
 sequences.private sets sorting splitting strings urls vocabs
 words words.symbol ;
 FROM: prettyprint.sections => with-pprint ;
@@ -340,7 +340,7 @@ ALIAS: $slot $snippet
 
 : a/an ( str -- str )
     [ first ] [ length ] bi 1 =
-    "afhilmnorsx" "aeiou" ? member? "an" "a" ? ;
+    "afhilmnorsx" vowels ? member? "an" "a" ? ;
 
 GENERIC: ($instance) ( element -- )
 
@@ -376,7 +376,7 @@ M: f ($instance) ($link) ;
     print-element $snippet ;
 
 : ($instances) ( element -- )
-     dup word? [ ($link) "s" print-element ] [ print-element ] if ;
+    dup word? [ ($link) "s" print-element ] [ print-element ] if ;
 
 : $sequence ( element -- )
     { "a " { $link sequence } " of " } print-element

@@ -5,8 +5,8 @@ USING: arrays combinators kernel kernel.private math ranges
 memoize.private sequences ;
 IN: generalizations
 
-! These words can be inline combinators the word does no math on
-! the input parameters, e.g. n.
+! These words can be inline combinators when the word does no math
+! on the input parameters, e.g. n.
 ! If math is done, the word needs to be a macro so the math can
 ! be done at compile-time.
 <<
@@ -15,8 +15,6 @@ ALIAS: n*quot (n*quot)
 
 MACRO: call-n ( n -- quot )
     [ call ] <repetition> '[ _ cleave ] ;
-
-: repeat ( n obj quot -- ) swapd times ; inline
 
 >>
 
@@ -29,11 +27,8 @@ MACRO: npick ( n -- quot )
     {
         { [ dup 0 <= ] [ nonpositive-npick ] }
         { [ dup 1 = ] [ drop [ dup ] ] }
-        [ 1 - [ dup ] [ '[ _ dip swap ] ] repeat ]
+        [ 1 - [ dup ] [ '[ _ dip swap ] ] swapd times ]
     } cond ;
-
-MACRO: nover ( n -- quot )
-    dup 1 + '[ _ npick ] n*quot ;
 
 : ndup ( n -- )
     [ '[ _ npick ] ] keep call-n ; inline
@@ -43,10 +38,13 @@ MACRO: dupn ( n -- quot )
     [ 1 - [ dup ] n*quot ] if-zero ;
 
 MACRO: nrot ( n -- quot )
-    1 - [ ] [ '[ _ dip swap ] ] repeat ;
+    1 - [ ] [ '[ _ dip swap ] ] swapd times ;
 
 MACRO: -nrot ( n -- quot )
-    1 - [ ] [ '[ swap _ dip ] ] repeat ;
+    1 - [ ] [ '[ swap _ dip ] ] swapd times ;
+
+: ndip ( n -- )
+    [ [ dip ] curry ] swap call-n call ; inline
 
 : ndrop ( n -- )
     [ drop ] swap call-n ; inline
@@ -54,8 +52,50 @@ MACRO: -nrot ( n -- quot )
 : nnip ( n -- )
     '[ _ ndrop ] dip ; inline
 
-: ndip ( n -- )
-    [ [ dip ] curry ] swap call-n call ; inline
+DEFER: -nrotd
+MACRO: nrotd ( n d -- quot )
+    over 0 < [
+        [ neg ] dip '[ _ _ -nrotd ]
+    ] [
+        [ 1 - [ ] [ '[ _ dip swap ] ] swapd times ] dip '[ _ _ ndip ]
+    ] if ;
+
+MACRO: -nrotd ( n d -- quot )
+    over 0 < [
+        [ neg ] dip '[ _ _ nrotd ]
+    ] [
+        [ 1 - [ ] [ '[ swap _ dip ] ] swapd times ] dip '[ _ _ ndip ]
+    ] if ;
+
+MACRO: nrotated ( nrots depth dip -- quot )
+    [ '[ [ _ nrot ] ] replicate [ ] concat-as ] dip '[ _ _ ndip ] ;
+
+MACRO: -nrotated ( -nrots depth dip -- quot )
+    [ '[ [ _ -nrot ] ] replicate [ ] concat-as ] dip '[ _ _ ndip ] ;
+
+MACRO: nrotate-heightd ( n height dip -- quot )
+    [ '[ [ _ nrot ] ] replicate concat ] dip '[ _ _ ndip ] ;
+
+MACRO: -nrotate-heightd ( n height dip -- quot )
+    [
+        '[ [ _ -nrot ] ] replicate concat
+    ] dip '[ _ _ ndip ] ;
+
+: ndupd ( n dip -- ) '[ [ _ ndup ] _ ndip ] call ; inline
+
+MACRO: ntuckd ( ntuck ndip -- quot )
+    [ 1 + ] dip '[ [ dup _ -nrot ] _ ndip ] ;
+
+MACRO: nover ( n -- quot )
+    dup 1 + '[ _ npick ] n*quot ;
+
+MACRO: noverd ( n depth dip -- quot' )
+    [ + ] [ 2drop ] [ [ + ] dip ] 3tri
+    '[ _ _ ndupd _ _ _ nrotated ] ;
+
+MACRO: mntuckd ( ndup depth ndip -- quot )
+    { [ nip ] [ 2drop ] [ drop + ] [ 2nip ] } 3cleave
+    '[ _ _ ndupd _ _ _ -nrotated ] ;
 
 : nkeep ( n -- )
     dup '[ [ _ ndup ] dip _ ndip ] call ; inline

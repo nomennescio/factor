@@ -199,7 +199,7 @@ CONSTANT: sign-flag         0x80
     swap cpu-f-bitor= ;
 
 : clear-flag ( cpu flag -- )
-     bitnot 0xFF bitand swap cpu-f-bitand= ;
+    bitnot 0xFF bitand swap cpu-f-bitand= ;
 
 : update-zero-flag ( result cpu -- )
     ! If the result of an instruction has the value 0, this
@@ -453,7 +453,7 @@ SYMBOL: rom-root
 
 : rom-dir ( -- string )
     rom-root get [
-        home "roms" append-path dup file-exists? [ drop f ] unless
+        "~/roms" dup file-exists? [ drop f ] unless
     ] unless* ;
 
 : load-rom* ( seq cpu -- )
