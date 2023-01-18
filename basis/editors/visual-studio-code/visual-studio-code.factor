@@ -8,12 +8,17 @@ IN: editors.visual-studio-code
 ! Command line arguments
 ! https://code.visualstudio.com/docs/editor/command-line
 
-TUPLE: visual-studio-code ;
-T{ visual-studio-code } editor-class set-global
+MIXIN: visual-studio-code-base
+
+SINGLETON: visual-studio-code
+
+INSTANCE: visual-studio-code visual-studio-code-base
+
+editor-class [ visual-studio-code ] initialize
 
 HOOK: find-visual-studio-code-path editor-class ( -- path )
 
-M: visual-studio-code find-visual-studio-code-path
+M: visual-studio-code-base find-visual-studio-code-path
     os {
         { linux [
             {
@@ -45,5 +50,5 @@ ERROR: can't-find-visual-studio-code ;
         number>string ":" glue ,
     ] { } make ;
 
-M: visual-studio-code editor-command
+M: visual-studio-code-base editor-command
     visual-studio-code-editor-command ;

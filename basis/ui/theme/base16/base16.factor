@@ -77,6 +77,7 @@ M: base16-theme deprecated-border-color "base01" named-base16 ;
 M: base16-theme warning-background-color "base01" named-base16 ;
 M: base16-theme warning-border-color "base01" named-base16 ;
 M: base16-theme code-background-color "base01" named-base16 ;
+M: base16-theme code-border-color "base01" named-base16 ;
 M: base16-theme help-path-border-color "base00" named-base16 ;
 
 M: base16-theme tip-background-color "base01" named-base16 ;
@@ -87,9 +88,6 @@ M: base16-theme dim-color "base03" named-base16 ;
 M: base16-theme highlighted-word-color "base04" named-base16 ;
 M: base16-theme string-color "base0A" named-base16 ;
 M: base16-theme stack-effect-color "base04" named-base16 ;
-
-M: base16-theme vocab-background-color "base00" named-base16 ;
-M: base16-theme vocab-border-color "base00" named-base16 ;
 
 M: base16-theme field-border-color "base00" named-base16 ;
 

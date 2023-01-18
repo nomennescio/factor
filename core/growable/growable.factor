@@ -21,7 +21,7 @@ M: growable set-nth-unsafe underlying>> set-nth-unsafe ; inline
 
 : push-all-unsafe ( from to src dst -- )
     [ over - swap ] 2dip pickd [ length integer>fixnum-strict ] keep
-    [ [ fixnum+fast ] dip length<< ] 2keep <copy> (copy) drop ; inline
+    [ [ fixnum+fast ] dip length<< ] 2keep <copier> (copy) drop ; inline
 
 PRIVATE>
 
@@ -35,7 +35,7 @@ GENERIC: contract ( len seq -- )
 M: growable contract
     [ length ] keep
     [ [ 0 ] 2dip set-nth-unsafe ] curry
-    (each-integer) ; inline
+    each-integer-from ; inline
 
 M: growable set-length
     bounds-check-head

@@ -44,7 +44,7 @@ ERROR: mime-decoding-ran-out-of-bytes ;
 : dump-until-separator ( multipart -- multipart )
     [ ] [ current-separator>> ] [ bytes>> ] tri
     dup [ mime-decoding-ran-out-of-bytes ] unless
-    2dup subseq-start [
+    2dup swap subseq-index [
         cut-slice
         [ mime-write ]
         [ swap length tail-slice >>bytes ] bi*

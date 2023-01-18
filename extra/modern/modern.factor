@@ -1,10 +1,10 @@
 ! Copyright (C) 2016 Doug Coleman.
 ! See http://factorcode.org/license.txt for BSD license.
-USING: accessors arrays assocs combinators
+USING: accessors arrays assocs combinators combinators.extras
 combinators.short-circuit continuations io.encodings.utf8
 io.files kernel make math math.order modern.paths modern.slices
-sequences sequences.extras sets combinators.extras splitting strings
-unicode vocabs.loader ;
+sequences sequences.extras sets splitting strings unicode
+vocabs.loader ;
 IN: modern
 
 ERROR: string-expected-got-eof n string ;
@@ -37,7 +37,7 @@ MACRO:: read-double-matched ( open-ch -- quot: ( n string tag ch -- n' string se
             ] }
             [ [ tag openstr2 n string ] dip long-opening-mismatch ]
         } case
-     ] ;
+    ] ;
 
 : read-double-matched-paren ( n string tag ch -- n' string seq ) CHAR: ( read-double-matched ;
 : read-double-matched-bracket ( n string tag ch -- n' string seq ) CHAR: [ read-double-matched ;

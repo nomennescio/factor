@@ -12,7 +12,8 @@ IN: sequences.extras
 :: subseq* ( from to seq -- subseq )
     seq length :> len
     from [ dup 0 < [ len + ] when ] [ 0 ] if*
-    to [ dup 0 < [ len + ] when ] [ len ] if* [ 0 len clamp ] bi@ dupd max seq subseq ;
+    to [ dup 0 < [ len + ] when ] [ len ] if*
+    [ 0 len clamp ] bi@ dupd max seq subseq ;
 
 : safe-subseq ( from to seq -- subseq )
     [ length '[ 0 _ clamp ] bi@ ] keep subseq ;
@@ -20,13 +21,10 @@ IN: sequences.extras
 : all-subseqs ( seq -- seqs )
     dup length [1..b] [ clump ] with map concat ;
 
-:: each-subseq ( ... seq quot: ( ... subseq -- ... ) -- ... )
-    seq length :> len
-    len [0..b] [| from |
-        from len (a..b] [| to |
-            from to seq subseq quot call
-        ] each
-    ] each ; inline
+: each-subseq ( ... seq quot: ( ... subseq -- ... ) -- ... )
+    [ dup length [ [0..b] ] [ ] bi ] dip '[
+        dup _ (a..b] [ rot [ subseq _ call ] keep ] with each
+    ] each drop ; inline
 
 : map-like ( seq exemplar -- seq' )
     '[ _ like ] map ; inline
@@ -104,12 +102,12 @@ PRIVATE>
 : even-indices ( seq -- seq' )
     [ length 1 + 2/ ] keep [
         [ [ 2 * ] dip nth-unsafe ] curry
-    ] keep map-integers ;
+    ] keep map-integers-as ;
 
 : odd-indices ( seq -- seq' )
     [ length 2/ ] keep [
         [ [ 2 * 1 + ] dip nth-unsafe ] curry
-    ] keep map-integers ;
+    ] keep map-integers-as ;
 
 : compact ( ... seq quot: ( ... elt -- ... ? ) elt -- ... seq' )
     [ split-when harvest ] dip join ; inline
@@ -263,7 +261,7 @@ PRIVATE>
     overd [ [ collect-with-previous ] keep ] new-like ; inline
 
 : map-with-previous-as ( ... seq quot: ( ... elt prev/f -- ... newelt ) exemplar -- ... newseq )
-    [ (1each) ] dip map-integers-with ; inline
+    [ length-operator ] dip map-integers-with ; inline
 
 : map-with-previous ( ... seq quot: ( ... elt prev/f -- ... newelt ) -- ... newseq )
     over map-with-previous-as ; inline
@@ -279,10 +277,13 @@ PRIVATE>
 PRIVATE>
 
 : map-from-as ( ... seq quot: ( ... elt -- ... newelt ) i exemplar -- ... newseq )
-    [ -rot setup-each-from ] dip map-integers ; inline
+    [ -rot setup-each-from ] dip map-integers-as ; inline
 
 : map-from ( ... seq quot: ( ... elt -- ... newelt ) i -- ... newseq )
     pick map-from-as ; inline
+
+: map-if ( ... seq if-quot: ( ... elt -- ... ? ) map-quot: ( ... elt -- ... newelt ) -- ... newseq )
+    '[ dup @ _ when ] map ; inline
 
 <PRIVATE
 
@@ -315,7 +316,7 @@ PRIVATE>
 
 : 3each-from
     ( ... seq1 seq2 seq3 quot: ( ... elt1 elt2 elt3 -- ... ) i -- ... )
-    [ (3each) ] dip -rot (each-integer) ; inline
+    [ (3each) ] dip -rot each-integer-from ; inline
 
 : 3map-reduce
     ( ..a seq1 seq2 seq3 map-quot: ( ..a elt1 elt2 elt3 -- ..b intermediate ) reduce-quot: ( ..b prev intermediate -- ..a next ) -- ..a result )
@@ -373,10 +374,16 @@ PRIVATE>
     ] if ; inline
 
 : unsurround ( newseq seq2 seq3 -- seq1 )
-   [ ?head drop ] [ ?tail drop ] bi* ;
+    [ ?head drop ] [ ?tail drop ] bi* ;
 
 : >string-list ( seq -- seq' )
     [ "\"" 1surround ] map "," join ;
+
+: with-string-lines ( str quot -- str' )
+    [ string-lines ] dip map "\n" join ; inline
+
+: prepend-lines-with-spaces ( str -- str' )
+    [ "    " prepend ] with-string-lines ;
 
 : one? ( ... seq quot: ( ... elt -- ... ? ) -- ... ? )
     [ find ] 2keep rot [
@@ -384,7 +391,7 @@ PRIVATE>
     ] [ 3drop f ] if ; inline
 
 : map-index! ( ... seq quot: ( ... elt index -- ... newelt ) -- ... seq )
-    over [ [ (each-index) ] dip collect ] keep ; inline
+    over [ [ sequence-index-operator ] dip collect ] keep ; inline
 
 <PRIVATE
 
@@ -403,7 +410,7 @@ PRIVATE>
     pick [ 2map-into ] keep ; inline
 
 : 2map-index ( ... seq1 seq2 quot: ( ... elt1 elt2 index -- ... newelt ) -- ... newseq )
-    pick [ (2each-index) ] dip map-integers ; inline
+    pick [ (2each-index) ] dip map-integers-as ; inline
 
 TUPLE: evens { seq read-only } ;
 
@@ -431,12 +438,6 @@ INSTANCE: odds virtual-sequence
 
 : until-empty ( seq quot -- )
     [ dup empty? ] swap until drop ; inline
-
-: arg-max ( seq -- n )
-    [ supremum ] keep index ;
-
-: arg-min ( seq -- n )
-    [ infimum ] keep index ;
 
 <PRIVATE
 
@@ -483,7 +484,7 @@ PRIVATE>
     [ [ dup ] compose [ ] ] dip produce-as nip ; inline
 
 : loop>array ( ... quot: ( ... -- ... obj/f ) -- ... array )
-   { } loop>sequence ; inline
+    { } loop>sequence ; inline
 
 : zero-loop>sequence ( ... quot: ( ... n -- ... obj/f ) exemplar -- ... seq )
     [ 0 ] [ '[ _ keep 1 + swap ] ] [ loop>sequence ] tri* nip ; inline
@@ -604,7 +605,7 @@ PRIVATE>
     [ length 1 - swap - ] [ nth ] bi ; inline
 
 : each-index-from ( ... seq quot: ( ... elt index -- ... ) i -- ... )
-    -rot (each-index) (each-integer) ; inline
+    -rot sequence-index-operator each-integer-from ; inline
 
 <PRIVATE
 
@@ -625,6 +626,12 @@ PRIVATE>
 : infimum-by* ( ... seq quot: ( ... elt -- ... x ) -- ... i elt )
     [ before? ] select-by* ; inline
 
+: arg-max ( seq -- n )
+    [ ] supremum-by* drop ;
+
+: arg-min ( seq -- n )
+    [ ] infimum-by* drop ;
+
 : ?supremum ( seq/f -- elt/f )
     [ f ] [
         [ ] [ 2dup and [ max ] [ dupd ? ] if ] map-reduce
@@ -635,11 +642,17 @@ PRIVATE>
         [ ] [ 2dup and [ min ] [ dupd ? ] if ] map-reduce
     ] if-empty ;
 
+: map-infimum ( seq quot: ( ... elt -- ... elt' ) -- elt' )
+    [ min ] map-reduce ; inline
+
+: map-supremum ( seq quot: ( ... elt -- ... elt' ) -- elt' )
+    [ max ] map-reduce ; inline
+
 : change-last ( seq quot -- )
-    [ drop length 1 - ] [ change-nth ] 2bi ; inline
+    [ index-of-last ] [ change-nth ] bi* ; inline
 
 : change-last-unsafe ( seq quot -- )
-    [ drop length 1 - ] [ change-nth-unsafe ] 2bi ; inline
+    [ index-of-last ] [ change-nth-unsafe ] bi* ; inline
 
 : replicate-into ( ... seq quot: ( ... -- ... newelt ) -- ... )
     over [ length ] 2dip '[ _ dip _ set-nth-unsafe ] each-integer ; inline
@@ -647,15 +660,24 @@ PRIVATE>
 : count* ( ... seq quot: ( ... elt -- ... ? ) -- ... % )
     over [ count ] [ length ] bi* / ; inline
 
+: sequence-index-operator-last ( n seq quot -- n quot' )
+    [ [ nth-unsafe ] curry [ keep ] curry ] dip compose ; inline
+
+: find-last-index-from ( ... n seq quot: ( ... elt i -- ... ? ) -- ... i elt )
+    '[
+        _ [ sequence-index-operator-last find-last-integer ] keepd
+        index/element
+    ] bounds-check-call ; inline
+
 : find-last-index ( ... seq quot: ( ... elt i -- ... ? ) -- ... i elt )
-    [ [ 1 - ] dip find-last-integer ] (find-index) ; inline
+    [ index-of-last ] dip find-last-index-from ; inline
 
 : map-find-last-index ( ... seq quot: ( ... elt index -- ... result/f ) -- ... result i elt )
     [ find-last-index ] (map-find-index) ; inline
 
 :: (start-all) ( seq subseq increment -- indices )
     0
-    [ [ subseq seq ] dip subseq-start-from dup ]
+    [ seq subseq subseq-index-from dup ]
     [ [ increment + ] keep ] produce nip ;
 
 : start-all ( seq subseq -- indices )
@@ -732,15 +754,15 @@ TUPLE: step-slice
     { seq read-only }
     { step integer read-only } ;
 
-:: <step-slice> ( from to step seq -- step-slice )
+:: <step-slice> ( from/f to/f step seq -- step-slice )
     step zero? [ "can't be zero" throw ] when
     seq length :> len
     step 0 > [
-        from [ 0 ] unless*
-        to [ len ] unless*
+        from/f [ 0 ] unless*
+        to/f [ len ] unless*
     ] [
-        from [ len ] unless*
-        to [ 0 ] unless*
+        from/f [ len ] unless*
+        to/f [ 0 ] unless*
     ] if
     [ dup 0 < [ len + ] when 0 len clamp ] bi@
     ! FIXME: make this work with steps
@@ -758,3 +780,55 @@ M: step-slice length
     zero? [ 1 + ] unless ; inline
 
 INSTANCE: step-slice virtual-sequence
+
+: 2nested-each ( seq1 seq2 quot -- )
+    swapd '[
+        swap _ with each
+    ] with each ; inline
+
+: 3nested-each ( seq1 seq2 seq3 quot -- )
+    [ spin ] dip '[
+        -rot [
+            swap _ with with each
+        ] with with each
+    ] with with each ; inline
+
+: 2nested-map ( seq1 seq2 quot -- seq )
+    2over [ length ] bi@ * reach
+    [
+        new-resizable
+        [ [ push ] curry compose 2nested-each ] keep
+    ] keep like ; inline
+
+: 3nested-map ( seq1 seq2 seq3 quot -- seq )
+    3 nover [ length ] tri@ * * 5 npick
+    [
+        new-resizable
+        [ [ push ] curry compose 3nested-each ] keep
+    ] keep like ; inline
+
+: each-prior ( ... seq quot: ( ... prior elt -- ... ) -- ... )
+    '[ [ swap @ ] keep ]
+    sequence-operator 0 -rot each-integer-from drop ; inline
+
+: map-prior-as ( ... seq quot: ( ... prior elt -- elt' ) exemplar -- seq' )
+    [
+        '[ [ swap @ ] keep swap ] length-operator 0 -rot
+    ] dip map-integers-as nip ; inline
+
+: map-prior ( ... seq quot: ( ... prior elt -- elt' ) -- seq' )
+    over map-prior-as ; inline
+
+TUPLE: virtual-zip-index seq ;
+
+C: <zip-index> virtual-zip-index
+
+M: virtual-zip-index length seq>> length ; inline
+
+M: virtual-zip-index nth-unsafe
+    over [ seq>> nth-unsafe ] [ 2array ] bi* ; inline
+
+INSTANCE: virtual-zip-index immutable-sequence
+
+: nth-index ( n obj seq -- i )
+    [ = dup [ drop 1 - dup 0 < ] when ] with find drop nip ;

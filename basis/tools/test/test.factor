@@ -22,11 +22,11 @@ SYMBOL: test-failures
 test-failures [ V{ } clone ] initialize
 
 T{ error-type-holder
-   { type +test-failure+ }
-   { word ":test-failures" }
-   { plural "unit test failures" }
-   { icon "vocab:ui/tools/error-list/icons/unit-test-error.png" }
-   { quot [ test-failures get ] }
+    { type +test-failure+ }
+    { word ":test-failures" }
+    { plural "unit test failures" }
+    { icon "vocab:ui/tools/error-list/icons/unit-test-error.png" }
+    { quot [ test-failures get ] }
 } define-error-type
 
 SYMBOL: silent-tests?
@@ -102,6 +102,9 @@ M: did-not-fail summary drop "Did not fail" ;
 
 :: (must-fail) ( quot -- error/f failed? tested? )
     [ { } quot with-datastack drop did-not-fail t ] [ drop f f ] recover t ;
+
+:: (must-not-fail) ( quot -- error/f failed? tested? )
+    [ { } quot with-datastack drop f f ] [ t ] recover t ;
 
 : experiment-title ( word -- string )
     "(" ?head drop ")" ?tail drop
@@ -211,6 +214,7 @@ TEST: must-infer-as
 TEST: must-infer
 TEST: must-fail-with
 TEST: must-fail
+TEST: must-not-fail
 
 M: test-failure error. ( error -- )
     {
@@ -225,6 +229,8 @@ M: test-failure error. ( error -- )
 : test ( prefix -- ) loaded-child-vocab-names test-vocabs ;
 
 : test-all ( -- ) "" test ;
+
+: test-root ( root -- ) "" vocabs-to-load test-vocabs ;
 
 : refresh-and-test ( prefix --  ) to-refresh [ do-refresh ] keepdd test-vocabs ;
 

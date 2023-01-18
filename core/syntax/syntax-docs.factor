@@ -120,8 +120,8 @@ ARTICLE: "syntax-floats" "Float syntax"
 { $subsections POSTPONE: NAN: }
 "To see the 64 bit value of " { $snippet "0/0." } " on your platform, execute the following code :"
 { $code
-     "USING: io math math.parser ;"
-     "\"NAN: \" write 0/0. double>bits >hex print"
+    "USING: io math math.parser ;"
+    "\"NAN: \" write 0/0. double>bits >hex print"
 }
 "Hexadecimal, octal and binary float literals are also supported. These consist of a hexadecimal, octal or binary literal with a decimal point and a mandatory base-two exponent expressed as a decimal number after " { $snippet "p" } " or " { $snippet "P" } ":"
 { $example
@@ -192,6 +192,7 @@ ARTICLE: "escape" "Character escape codes"
     { { $snippet "\\u" { $emphasis "xxxxxx" } } { "The Unicode code point with hexadecimal number " { $snippet { $emphasis "xxxxxx" } } } }
     { { $snippet "\\u{" { $emphasis "xx" } "}" } { "The Unicode code point with hexadecimal number " { $snippet { $emphasis "xx" } } } }
     { { $snippet "\\u{" { $emphasis "name" } "}" } { "The Unicode code point named " { $snippet { $emphasis "name" } } } }
+    { { $snippet "\\xxx" } "an octal escape specified by one, two, or three octal digits" }
 } ;
 
 ARTICLE: "syntax-strings" "Character and string syntax"
@@ -896,7 +897,9 @@ HELP: ERROR:
     "The following two snippets are equivalent:"
     { $code
         "ERROR: invalid-values x y ;"
-        ""
+    }
+    $nl
+    { $code
         "TUPLE: invalid-values x y ;"
         ": invalid-values ( x y -- * )"
         "    \\ invalid-values boa throw ;"
@@ -921,7 +924,11 @@ HELP: C:
 HELP: MAIN:
 { $syntax "MAIN: word" }
 { $values { "word" word } }
-{ $description "Defines the main entry point for the current vocabulary and source file. This word will be executed when this vocabulary is passed to " { $link run } " or the source file is run as a script." } ;
+{ $description "Defines the main entry point for the current vocabulary and source file. This word will be executed when this vocabulary is passed to " { $link run } " or the source file is run as a script."
+    $nl
+    "If a quotation is passed instead of a word, then it will be run as the main entry point, in the same way." 
+    { $warning "Quotation support in " { $snippet "MAIN:" } " is test functionality. Use it with caution." }
+} ;
 
 HELP: <PRIVATE
 { $syntax "<PRIVATE ... PRIVATE>" }

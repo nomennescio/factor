@@ -17,9 +17,9 @@ IN: combinators.extras.tests
 { { "negative" 0 "positive" } } [
     { -1 0 1 } [
         {
-           { [ 0 > ] [ "positive" ] }
-           { [ 0 < ] [ "negative" ] }
-           [ ]
+            { [ 0 > ] [ "positive" ] }
+            { [ 0 < ] [ "negative" ] }
+            [ ]
         } cond-case
     ] map
 ] unit-test
@@ -59,6 +59,29 @@ IN: combinators.extras.tests
     "hi there" {
         { [ "foo" over subseq-start ] [ head f ] }
         { [ "bar" over subseq-start ] [ cut ] }
+        [ f ]
+    } cond*
+] unit-test
+
+{ "hi " "there" } [
+    "hi there" {
+        { [ dup "there" subseq-index ] [ cut ] }
+        [ f ]
+    } cond*
+] unit-test
+
+{ "hi " "there" } [
+    "hi there" {
+        { [ dup "foo" subseq-index ] [ head f ] }
+        { [ dup "there" subseq-index ] [ cut ] }
+        [ f ]
+    } cond*
+] unit-test
+
+{ "hi there" f } [
+    "hi there" {
+        { [ dup "foo" subseq-index ] [ head f ] }
+        { [ dup "bar" subseq-index ] [ cut ] }
         [ f ]
     } cond*
 ] unit-test
@@ -164,3 +187,8 @@ IN: combinators.extras.tests
 { 103 203 { { 1 1 } { 2 2 } { 3 3 } } }
 [ 100 200 { { 1 1 } { 2 2 } { 3 3 } } [ [ 1 + ] bi@ ] 2temp2d assoc-map ] unit-test
 
+{ 10 } [ 5 [ 2 * ] plox ] unit-test
+{ f } [ f [ 2 * ] plox ] unit-test
+
+{ 12 } [ 12 [ odd? ] [ 2/ ] plox-if ] unit-test
+{ 6 } [ 13 [ odd? ] [ 2/ ] plox-if ] unit-test

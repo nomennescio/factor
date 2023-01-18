@@ -3,9 +3,8 @@
 
 USING: accessors arrays assocs classes combinators
 combinators.short-circuit compiler.units effects.parser fry
-generalizations kernel locals make math math.order namespaces
-quotations sequences sets splitting unicode vectors
-vocabs.loader words ;
+kernel make math math.order namespaces quotations sequences
+sets splitting unicode vectors vocabs.loader words ;
 
 IN: peg
 
@@ -266,7 +265,7 @@ GENERIC: (compile) ( peg -- quot )
     pos get apply-rule process-parser-result ;
 
 : preset-parser-word ( parser -- word parser )
-    gensym swap over >>compiled ;
+    gensym tuck >>compiled ;
 
 : define-parser-word ( word parser -- )
     ! Return the body of the word that is the compiled version

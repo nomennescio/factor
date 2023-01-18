@@ -2,11 +2,11 @@
 ! See http://factorcode.org/license.txt for BSD license.
 
 USING: accessors ascii assocs combinators
-combinators.short-circuit fry io.encodings.string
-io.encodings.utf8 io.pathnames io.sockets io.sockets.secure
-kernel lexer linked-assocs make math math.parser multiline
-namespaces peg.ebnf present sequences sequences.generalizations
-splitting strings strings.parser urls.encoding vocabs.loader ;
+combinators.short-circuit io.pathnames io.sockets
+io.sockets.secure kernel lexer linked-assocs make math.parser
+multiline namespaces peg.ebnf present sequences
+sequences.generalizations splitting strings strings.parser
+urls.encoding vocabs.loader ;
 
 IN: urls
 
@@ -120,7 +120,7 @@ M: pathname >url string>> >url ;
 
 : ipv6-host ( host -- host/ipv6 ipv6? )
     dup { [ "[" head? ] [ "]" tail? ] } 1&& [
-        1 swap [ length 1 - ] [ subseq ] bi t
+        1 swap index-of-last subseq t
     ] [ f ] if ;
 
 : unparse-host ( url -- host )
@@ -164,7 +164,7 @@ PRIVATE>
         { [ dup "/" head? ] [ nip ] }
         { [ dup empty? ] [ drop ] }
         { [ over "/" tail? ] [ append ] }
-        { [ "/" pick subseq-start not ] [ nip ] }
+        { [ over "/" subseq-index not ] [ nip ] }
         [ [ "/" split1-last drop "/" ] dip 3append ]
     } cond remove-dot-segments ;
 

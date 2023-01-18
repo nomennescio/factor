@@ -47,8 +47,8 @@ SYMBOL: vocab-articles
         ] vocabs-quot get call( quot -- )
     ] leaks members no-ui-disposables
     dup length 0 > [
-       dup [ class-of ] histogram-by
-       [ "Leaked resources: " write ... ] with-string-writer simple-lint-error
+        dup [ class-of ] histogram-by
+        [ "Leaked resources: " write ... ] with-string-writer simple-lint-error
     ] [
         drop
     ] if ;
@@ -120,11 +120,6 @@ SYMBOL: vocab-articles
         simple-lint-error
     ] unless ;
 
-: check-nulls ( element -- )
-    \ $values swap elements
-    null swap deep-member?
-    [ "$values should not contain null" simple-lint-error ] when ;
-
 : check-see-also ( element -- )
     \ $see-also swap elements [ rest all-unique? ] all?
     [ "$see-also are not unique" simple-lint-error ] unless ;
@@ -132,10 +127,10 @@ SYMBOL: vocab-articles
 : check-modules ( element -- )
     \ $vocab-link swap elements [
         second
-        vocab-exists? [
-            "$vocab-link to non-existent vocabulary"
+        dup vocab-exists? [ drop ] [
+            "$vocab-link to non-existent vocabulary ``" "''" surround
             simple-lint-error
-        ] unless
+        ] if
     ] each ;
 
 : check-slots-tables ( element -- )
@@ -152,7 +147,7 @@ SYMBOL: vocab-articles
             simple-lint-error
         ] when
     ] [
-        "  " swap subseq? [
+        "  " subseq-of? [
             "Paragraph text should not contain double spaces"
             simple-lint-error
         ] when

@@ -23,10 +23,10 @@ IN: codebase-analyzer
     [ has-file-extension? ] filter ;
 
 : without-git-paths ( paths -- paths' )
-    [ "/.git/" swap subseq? ] reject ;
+    [ "/.git/" subseq-of? ] reject ;
 
 : without-node-modules-paths ( paths -- paths' )
-    [ "/node_modules/" swap subseq? ] reject ;
+    [ "/node_modules/" subseq-of? ] reject ;
 
 : regular-directory-files ( path -- seq )
     recursive-directory-files
@@ -167,10 +167,10 @@ IN: codebase-analyzer
         [ uses-make? [ "uses make" print ] when ]
         [ rc-files [ length "has %d rc files" sprintf print ] unless-empty ]
         [ ignore-files [ length "has %d ignore files" sprintf print ] unless-empty nl ]
-        [ "Top 20 largest files" print file-sizes sort-values 20 sequences:short tail* [ normalize-path ] map-keys reverse assoc. nl ]
-        [ "Top 10 file extension sizes" print sum-sizes-by-extension 10 sequences:short tail* reverse assoc. nl ]
-        [ "Top 10 text file line counts" print sum-line-counts-by-extension 10 sequences:short tail* reverse assoc. nl ]
-        [ "Top 10 file extension counts" print count-by-file-extension 10 sequences:short tail* reverse assoc. nl ]
+        [ "Top 20 largest files" print file-sizes sort-values 20 index-or-length tail* [ normalize-path ] map-keys reverse assoc. nl ]
+        [ "Top 10 file extension sizes" print sum-sizes-by-extension 10 index-or-length tail* reverse assoc. nl ]
+        [ "Top 10 text file line counts" print sum-line-counts-by-extension 10 index-or-length tail* reverse assoc. nl ]
+        [ "Top 10 file extension counts" print count-by-file-extension 10 index-or-length tail* reverse assoc. nl ]
     } cleave ;
 
 : analyze-codebase ( path -- )

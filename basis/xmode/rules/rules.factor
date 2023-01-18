@@ -38,16 +38,11 @@ MEMO: standard-rule-set ( id -- ruleset )
     imports>> push ;
 
 : inverted-index ( hashes key index -- )
+    [ [ { f } ] when-empty ] 2dip
     [ swapd push-at ] 2curry each ;
 
-: ?push-all ( seq1 seq2 -- seq1+seq2 )
-    [
-        over [ [ V{ } like ] dip append! ] [ nip ] if
-    ] when* ;
-
 : rule-set-no-word-sep* ( ruleset -- str )
-    [ no-word-sep>> ]
-    [ keywords>> ] bi
+    [ no-word-sep>> ] [ keywords>> ] bi
     dup [ keyword-map-no-word-sep* ] when
     "_" 3append ;
 
@@ -60,13 +55,13 @@ C: <matcher> matcher
 TUPLE: rule
 no-line-break?
 no-word-break?
-no-escape?
 start
 end
 match-token
 body-token
 delegate
 chars
+escape-rule
 ;
 
 TUPLE: seq-rule < rule ;
@@ -111,10 +106,6 @@ M: regexp text-hash-char drop f ;
     [ dup rule-chars* >upper swap ] dip rules>> inverted-index ;
 
 : add-escape-rule ( string ruleset -- )
-    over [
-        [ <escape-rule> ] dip
-        2dup escape-rule<<
-        add-rule
-    ] [
-        2drop
-    ] if ;
+    '[
+        <escape-rule> _ [ escape-rule<< ] [ add-rule ] 2bi
+    ] unless-empty ;

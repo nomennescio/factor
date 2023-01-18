@@ -265,7 +265,7 @@ CONSTANT: compass-directions H{
             ] [
                 string>number "of %s" sprintf
             ] if* "runway %s visibility %s" sprintf
-         ] dip " ft" " meters" ? append
+        ] dip " ft" " meters" ? append
     ] dip append ;
 
 : (parse-weather) ( str -- str' )
@@ -282,7 +282,7 @@ CONSTANT: compass-directions H{
     ] if ;
 
 : parse-weather ( str -- str' )
-    "VC" over subseq? [ "VC" "" replace t ] [ f ] if
+    dup "VC" subseq-of? [ "VC" "" replace t ] [ f ] if
     [ (parse-weather) ]
     [ [ " in the vicinity" append ] when ] bi* ;
 

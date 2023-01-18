@@ -59,23 +59,23 @@ PREDICATE: zero-square-matrix < square-matrix
     dup <zero-matrix> ; inline
 
 <PRIVATE
-: (nth-from-end) ( n seq -- n )
+: (nth-from-tail) ( n seq -- n )
     length 1 - swap - ; inline flushable
 
 : nth-end ( n seq -- elt )
-    [ (nth-from-end) ] keep nth ; inline flushable
+    [ (nth-from-tail) ] keep nth ; inline flushable
 
 : nth-end-unsafe ( n seq -- elt )
-    [ (nth-from-end) ] keep nth-unsafe ; inline flushable
+    [ (nth-from-tail) ] keep nth-unsafe ; inline flushable
 
 : array-nth-end-unsafe ( n seq -- elt )
-    [ (nth-from-end) ] keep swap 2 fixnum+fast slot ; inline flushable
+    [ (nth-from-tail) ] keep swap 2 fixnum+fast slot ; inline flushable
 
 : set-nth-end ( elt n seq -- )
-    [ (nth-from-end) ] keep set-nth ; inline
+    [ (nth-from-tail) ] keep set-nth ; inline
 
 : set-nth-end-unsafe ( elt n seq -- )
-    [ (nth-from-end) ] keep set-nth-unsafe ; inline
+    [ (nth-from-tail) ] keep set-nth-unsafe ; inline
 PRIVATE>
 
 ! main-diagonal matrix
@@ -122,7 +122,7 @@ ALIAS: transpose flip
 
 : unshaped-cols-iota ( matrix -- cols-iota )
   [ first-unsafe length ] keep
-  [ length min ] 1 (each-from) (each-integer) <iota> ; inline
+  [ length min ] 1 each-from <iota> ; inline
 
 : generic-anti-transpose-unsafe ( cols-iota matrix -- newmatrix )
     [ <reversed> [ nth-end-unsafe ] with { } map-as ] curry { } map-as ; inline

@@ -665,7 +665,7 @@ M: in-body-mode tree-insert*
             over tree>> push
 
             after-body-mode >>insertion-mode
-         ] }
+        ] }
         { [ dup { [ end-tag? ] [ name>> "html" = ] } 1&& ] [ drop unimplemented* ] }
         ! { [ ] [ ] }
         [
@@ -691,7 +691,7 @@ M: after-body-mode tree-insert*
         { [ dup doctype? ] [ drop ] }
         { [ dup { [ tag? ] [ name>> "html" = ] } 1&& ] [
             unimplemented*
-         ] }
+        ] }
         { [ dup { [ end-tag? ] [ name>> "html" = ] } 1&& ] [
             ! XXX: make this a function
             "html" pick tree>> find-matching-tag
@@ -2085,3 +2085,4 @@ ERROR: invalid-return-state obj ;
 
 : parse-html5 ( string -- document )
     [ <document> 0 ] dip data-state 2drop ;
+

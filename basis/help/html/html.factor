@@ -73,34 +73,66 @@ M: pathname url-of
     swap "\n" glue [XML <style><-></style> XML] ;
 
 : help-meta ( -- xml )
-    [XML <meta
+    [XML
+        <meta
             name="viewport"
             content="width=device-width, initial-scale=1"
             charset="utf-8"
-        /> XML] ;
+        />
+        <meta
+            name="theme-color"
+            content="#f5f5f5"
+            media="(prefers-color-scheme: light)"
+        />
+        <meta
+            name="theme-color"
+            content="#373e48"
+            media="(prefers-color-scheme: dark)"
+        />
+    XML] ;
 
-: help-navbar ( -- xml )
+: help-script ( -- xml )
+    [XML
+        <script type="text/javascript">
+        document.addEventListener('keydown', function (event) {
+            if (event.code == 'Slash') {
+                let input = document.getElementById('search');
+                if (input != null) {
+                    if (input !== document.activeElement) {
+                        event.preventDefault();
+                        setTimeout(function() {
+                            input.focus();
+                        }, 0);
+                    }
+                }
+            }
+        });
+        </script>
+    XML] ;
+
+: help-header ( stylesheet -- xml )
+    help-stylesheet help-meta swap help-script 3append ;
+
+: help-nav ( -- xml )
     "conventions" >link topic>filename
     [XML
-        <div class="navbar">
-            <div class="navrow">
-                <a href="https://factorcode.org">
-                <img src="favicon.ico" width="24" height="24" />
-                </a>
-                <a href="/">Handbook</a>
-                <a href=<->>Glossary</a>
-                <form method="get" action="/search" style="float: right;">
-                    <input placeholder="Search" name="search" type="text"/>
-                    <input type="submit" value="Go"/>
-                </form>
-            </div>
-        </div>
-     XML] ;
+        <nav>
+            <form method="get" action="/search" style="float: right;">
+                <input placeholder="Search" id="search" name="search" type="text" tabindex="1" />
+                <input type="submit" value="Go" tabindex="1" />
+            </form>
+            <a href="https://factorcode.org">
+            <img src="favicon.ico" width="24" height="24" />
+            </a>
+            <a href="/">Handbook</a>
+            <a href=<->>Glossary</a>
+        </nav>
+    XML] ;
 
 : help-footer ( -- xml )
     version-info "\n" split1 drop
     [XML
-        <div class="footer">
+        <footer>
         <p>
         This documentation was generated offline from a
         <code>load-all</code> image.  If you want, you can also
@@ -110,7 +142,7 @@ M: pathname url-of
         for more information.
         </p>
         <p><-></p>
-        </div>
+        </footer>
     XML] ;
 
 : bijective-base26 ( n -- name )
@@ -140,22 +172,22 @@ M: pathname url-of
         " white-space: pre-wrap; line-height: 125%;" append
     ] re-replace-with
 
-    { "font-family: monospace;" "background-color:" } [ over subseq? ] all? [
-        " border: 1px solid #e3e2db; margin: 10px 0px;" append
+    dup { "font-family: monospace;" "background-color:" } [ subseq-of? ] with all? [
+        " margin: 10px 0px;" append
     ] when
 
-    { "border:" "background-color:" } [ over subseq? ] all? [
+    dup { "border:" "background-color:" } [ subseq-of? ] with all? [
         " border-radius: 5px;" append
     ] when ;
 
 : fix-help-header ( classes -- classes )
     dup [
-        [ ".a" head? ] [ "#f4efd9;" swap subseq? ] bi and
+        [ ".a" head? ] [ "#f4efd9;" subseq-of? ] bi and
     ] find [
         "padding: 10px;" "padding: 0px;" replace
         "background-color: #f4efd9;" "background-color: white;" replace
         "}" ?tail drop
-        " border-bottom: 1px dashed #ccc; width: 100%; padding-top: 15px; padding-bottom: 10px; }"
+        " border-bottom: 1px dashed #d5d5d5 width: 100%; padding-top: 15px; padding-bottom: 10px; }"
         append swap pick set-nth {
             ".a a { color: black; font-size: 24pt; line-height: 100%; }"
             ".a * a { color: #2a5db0; font-size: 12pt; }"
@@ -176,7 +208,7 @@ M: pathname url-of
                     >string H{
                         { "#000000;" "#bdc1c6;" }
                         { "#2a5db0;" "#8ab4f8;" }
-                        { "#333333;" "#cccccc;" }
+                        { "#333333;" "#d5d5d5;" }
                         { "#373e48;" "#ffffff;" }
                         { "#8b4500;" "orange;" }
                         { "#e3e2db;" "#444444;" }
@@ -188,7 +220,7 @@ M: pathname url-of
                 ] re-replace-with
             ] map " " join "{ " " }" surround
         ] re-replace-with "    " prepend
-        "{  }" over subseq? [ drop f ] when
+        dup "{  }" subseq-of? [ drop f ] when
     ] map harvest append "}" suffix ;
 
 : css-classes ( classes -- stylesheet )
@@ -215,7 +247,7 @@ M: pathname url-of
     ] each classes sort-values css-classes body ;
 
 : retina-image ( path -- path' )
-    "@2x" over subseq? [ "." split1-last "@2x." glue ] unless ;
+    dup "@2x" subseq-of? [ "." split1-last "@2x." glue ] unless ;
 
 : ?copy-file ( from to -- )
     dup file-exists? [ 2drop ] [ copy-file ] if ;
@@ -240,7 +272,7 @@ M: pathname url-of
         [ print-topic ] with-html-writer
         css-styles-to-classes cache-images
         "resource:extra/websites/factorcode/favicon.ico" dup file-name ?copy-file
-        [ help-stylesheet help-meta prepend help-navbar ] dip help-footer
+        [ help-header help-nav ] dip help-footer
         [XML <-><div class="page"><-><-></div> XML]
     ] bi simple-page ;
 

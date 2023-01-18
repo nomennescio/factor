@@ -1,9 +1,8 @@
 ! Copyright (C) 2008 Doug Coleman.
 ! See http://factorcode.org/license.txt for BSD license.
-
 USING: accessors alien arrays assocs byte-arrays calendar
 classes classes.error combinators combinators.short-circuit
-continuations hashtables help.markup interpolate io
+continuations eval hashtables help.markup interpolate io
 io.directories io.encodings.utf8 io.files io.pathnames
 io.streams.string kernel math math.parser namespaces prettyprint
 quotations sequences sets sorting splitting strings system
@@ -127,6 +126,11 @@ ERROR: vocab-must-not-exist string ;
         { "vocab-root" "a vocabulary root string" }
         { "c-ptr" c-ptr }
         { "sequence" sequence }
+        { "slice" slice }
+        { "from" integer }
+        { "to" integer }
+        { "i" integer }
+        { "n" integer }
         { "seq" sequence }
         { "exemplar" object }
         { "assoc" assoc }
@@ -157,8 +161,8 @@ M: object add-using
                 [ unparse write bl ]
                 [ [ pprint ] [ add-using ] bi ] bi*
             ] [
-                drop unparse write bl null pprint
-                null add-using
+                drop unparse write bl object pprint
+                object add-using
             ] if
             " }" write
         ] interleave
@@ -252,6 +256,7 @@ M: object add-using
     [ HS{ } clone using ] dip with-variable ; inline
 
 : link-vocab ( vocab -- )
+    ".private" ?tail drop
     check-vocab
     "Edit documentation: " write
     "-docs.factor" vocab/suffix>path <pathname> . ;
@@ -386,6 +391,25 @@ ${example-indent}}
 
 : scaffold-factor-roots ( -- )
     ".factor-roots" scaffold-rc ;
+
+: make-unit-test ( answer code -- str )
+    split-lines [ "    " prepend ] map "\n" join
+    "[\n" "\n] unit-test\n" surround
+    " " glue ;
+
+: run-string ( string -- datastack )
+    parse-string V{ } clone swap with-datastack ; inline
+
+: scaffold-unit-test ( -- str/f )
+    read-contents dup "" = [
+        drop f
+    ] [
+        [ run-string unparse ] keep
+        make-unit-test
+    ] if ;
+
+: scaffold-unit-tests ( -- str )
+    [ scaffold-unit-test dup ] [ ] produce nip "\n\n" join ;
 
 HOOK: scaffold-emacs os ( -- )
 

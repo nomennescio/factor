@@ -19,7 +19,7 @@ IN: html.parser.analyzer
     swap attributes>> key? ;
 
 : find-all ( seq quot -- alist )
-   [ <enumerated> >alist ] [ '[ second @ ] ] bi* filter ; inline
+    [ <enumerated> >alist ] [ '[ second @ ] ] bi* filter ; inline
 
 : loopn-index ( n quot -- )
     [ <iota> ] [ '[ @ not ] ] bi* find 2drop ; inline
@@ -142,7 +142,7 @@ ERROR: undefined-find-nth m n seq quot ;
     [ { [ name>> = ] [ closing?>> not ] } 1&& ] with find-all ;
 
 : href-contains? ( str tag -- ? )
-    "href" attribute* [ subseq? ] [ 2drop f ] if ;
+    "href" attribute* [ swap subseq-of? ] [ 2drop f ] if ;
 
 : find-hrefs ( vector -- vector' )
     [ { [ name>> "a" = ] [ "href" attribute? ] } 1&& ] filter sift

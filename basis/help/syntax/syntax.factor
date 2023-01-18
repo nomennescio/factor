@@ -17,7 +17,7 @@ DEFER: HELP{
     ?scan-token dup {
         [ "{" = [ \ HELP{ ] [ f ] if ]
         [ "syntax" lookup-word ]
-        [ "help.markup" lookup-word ]
+        [ { [ "$" head? ] [ "help.markup" lookup-word ] } 1&& ]
         [ dup ?last ":{[(/\"" member-eq? [ search ] [ drop f ] if ]
     } 1|| {
         { [ dup not ] [ drop ] }
@@ -91,7 +91,7 @@ DEFER: HELP{
 
 : trim-whitespace ( seq -- seq' )
     dup rest-slice dup whitespace
-    [ '[ _ short tail ] map! ] unless-zero drop
+    [ '[ _ index-or-length tail ] map! ] unless-zero drop
     0 over [ [ blank? ] trim-head ] change-nth ;
 
 : code-lines ( str -- seq )
@@ -113,7 +113,7 @@ DEFER: HELP{
 
 : help-text? ( word -- ? )
     {
-        $description $snippet $emphasis $strong $url $heading
+        $description $snippet $emphasis $strong $heading
         $subheading $syntax $class-description
         $error-description $var-description $contract $notes
         $curious $deprecated $errors $side-effects $content

@@ -1,7 +1,8 @@
 USING: assocs fonts help.stylesheet help.tips io.styles kernel
-listener memoize namespaces prettyprint.stylesheet sequences
-ui.gadgets.panes.private ui.theme ui.theme.switching
-ui.tools.listener vectors vocabs.prettyprint words ;
+listener memoize namespaces prettyprint.private
+prettyprint.stylesheet sequences ui.gadgets.panes.private
+ui.theme ui.theme.switching ui.tools.listener vectors
+vocabs.prettyprint words ;
 IN: ui.theme.switching.tools
 
 : update-tools-style ( -- )
@@ -19,6 +20,7 @@ IN: ui.theme.switching.tools
     heading-style heading-color foreground update-style
     snippet-style snippet-color foreground update-style
     code-style code-background-color page-color update-style
+    code-style code-border-color border-color update-style
     code-style text-color foreground update-style
     output-style output-color foreground update-style
     url-style link-color foreground update-style
@@ -40,9 +42,14 @@ IN: ui.theme.switching.tools
     base-vocab-style dim-color foreground update-style
     base-effect-style stack-effect-color foreground update-style
 
+    ! prettyprint.private
+    \ => "word-style" word-prop
+    [ content-background foreground rot set-at ]
+    [ text-color background rot set-at ] bi
+
     ! vocabs.prettyprint
-    manifest-style vocab-background-color page-color update-style
-    manifest-style vocab-border-color border-color update-style
+    manifest-style code-background-color page-color update-style
+    manifest-style code-border-color border-color update-style
 
     ! ui.gadgets.panes
     \ specified-font reset-memoized

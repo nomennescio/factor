@@ -1,12 +1,11 @@
 ! Copyright (C) 2021 John Benediktsson
 ! See http://factorcode.org/license.txt for BSD license
 
-USING: accessors arrays assocs combinators
-combinators.short-circuit command-loop formatting gemini
-gemini.private io io.directories io.encodings.string
-io.encodings.utf8 io.files io.files.temp io.launcher io.pipes
-kernel math math.parser namespaces present sequences splitting
-system urls webbrowser ;
+USING: accessors arrays combinators.short-circuit command-loop
+environment formatting gemini gemini.private io io.directories
+io.encodings.string io.encodings.utf8 io.files io.files.temp
+io.launcher io.pipes kernel math math.parser namespaces present
+sequences splitting system urls webbrowser ;
 
 IN: gemini.cli
 
@@ -101,7 +100,7 @@ CONSTANT: URL V{ }
 
 : gemini-go ( args -- )
     present [ DEFAULT-URL ] when-empty
-    { [ "://" over subseq? ] [ "gemini://" head? ] } 1||
+    { [ dup "://" subseq-of? ] [ "gemini://" head? ] } 1||
     [ "gemini://" prepend ] unless
     dup "gemini://" head? [
         [ add-history ] [ add-stack ] [ gemini-get ] tri
@@ -125,7 +124,12 @@ CONSTANT: URL V{ }
 
 : gemini-less ( -- )
     "gemini.txt" temp-file dup file-exists? [
-        "less" swap 2array try-process
+        utf8 [
+            <process>
+                "PAGER" os-env [ "less" ] unless* >>command
+                input-stream get >>stdin
+            try-process
+        ] with-file-reader
     ] [ drop ] if ;
 
  : gemini-ls ( args -- )
@@ -206,6 +210,11 @@ CONSTANT: COMMANDS {
         { quot [ gemini-shell ] }
         { help "'cat' the most recent Gemini URL through a shell." }
         { abbrevs { "!" } } }
+    T{ command
+        { name "home" }
+        { quot [ drop DEFAULT-URL gemini-go ] }
+        { help "Go to the default Gemini URL" }
+        { abbrevs f } }
     T{ command
         { name "quit" }
         { quot [ drop gemini-quit ] }

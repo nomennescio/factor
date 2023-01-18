@@ -37,30 +37,35 @@ cli-git-num-parallel [ cpus 2 * ] initialize
 : git-diff-name-only ( path from to -- lines )
     '[ _ _ git-diff-name-only* ] with-directory ;
 
-: git-repository? ( directory -- ? )
+: git-directory? ( directory -- ? )
     ".git" append-path current-directory get prepend-path
     ?file-info dup [ directory? ] when ;
 
 : git-current-branch* ( -- name )
-     { "git" "rev-parse" "--abbrev-ref" "HEAD" } git-command>string ;
+    { "git" "rev-parse" "--abbrev-ref" "HEAD" } git-command>string ;
 
 : git-current-branch ( directory -- name )
     [ git-current-branch* ] with-directory ;
 
-: repository-url>name ( string -- string' )
+: git-directory-name ( string -- string' )
     file-name ".git" ?tail drop ;
 
-: update-repository ( url -- process )
-    dup repository-url>name git-repository?
-    [ repository-url>name git-pull ] [ git-clone ] if ;
+: sync-repository ( url -- process )
+    dup git-directory-name git-directory?
+    [ git-directory-name git-pull ] [ git-clone ] if ;
+
+: sync-repository-as ( url path -- process )
+    dup git-directory?
+    [ nip git-pull ] [ git-clone-as ] if ;
 
 : sync-repositories ( directory urls -- )
     '[
         _ cli-git-num-parallel get <semaphore> '[
-            _ [ update-repository ] with-semaphore
+            _ [ sync-repository ] with-semaphore
         ] parallel-each
     ] with-ensure-directory ;
 
 : directory-entries-without-git ( directory -- entries )
     recursive-directory-entries
-    [ name>> "/.git/" swap subseq? ] reject ;
+    [ name>> "/.git/" subseq-of? ] reject ;
+

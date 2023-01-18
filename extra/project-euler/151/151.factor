@@ -9,7 +9,7 @@ IN: project-euler.151
 ! -----------
 
 ! A printing shop runs 16 batches (jobs) every week and each batch requires a
-! sheet of special colour-proofing paper of size A5.
+! sheet of special color-proofing paper of size A5.
 
 ! Every Monday morning, the foreman opens a new envelope, containing a large
 ! sheet of the special paper with size A1.
@@ -63,7 +63,7 @@ DEFER: (euler151)
         { { 0 1 0 0 } [ { 0 0 1 1 } (euler151) 1 + ] }
         { { 1 0 0 0 } [ { 0 1 1 1 } (euler151) 1 + ] }
         [ [ dup length <iota> [ pick-sheet ] with map-sum ] [ sum ] bi / ]
-     } case ] cache ;
+    } case ] cache ;
 
 : euler151 ( -- answer )
     [
