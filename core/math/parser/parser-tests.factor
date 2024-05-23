@@ -364,6 +364,13 @@ unit-test
 { f } [ "1_2_" string>number ] unit-test
 { 123 } [ "1_2_3" string>number ] unit-test
 
+{ { 1 1 1 1 0 1 1 } } [ 123 2 >base-digits ] unit-test
+{ { 4 4 3 } } [ 123 5 >base-digits ] unit-test
+{ 123 } [ { 1 1 1 1 0 1 1 } 2 base-digits> ] unit-test
+{ 123 } [ { 4 4 3 } 5 base-digits> ] unit-test
+{ 8902 } [ { 8 9 0 2 } digits> ] unit-test
+{ { 2 5 9 6 } } [ 2596 >digits ] unit-test
+
 ! #372
 ! hex float requires exponent
 { f } [ "0x1.0" string>number ] unit-test
@@ -477,10 +484,6 @@ unit-test
 { 0.0  } [ "1e-100000" string>number ] unit-test
 { 1/0. } [ "0x1p300000" string>number ] unit-test
 { 0.0  } [ "0x1p-300000" string>number ] unit-test
-
-{ "deadbeef" } [ B{ 222 173 190 239 } bytes>hex-string ] unit-test
-{ B{ 222 173 190 239 } } [ "deADbeEF" hex-string>bytes ] unit-test
-[ "0" hex-string>bytes ] [ invalid-hex-string-length? ] must-fail-with
 
 { "143.99999999999997" } [ 0x1.1ffffffffffffp7 number>string ] unit-test
 { "144.0" } [ 0x1.2p7 number>string ] unit-test

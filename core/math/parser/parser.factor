@@ -380,6 +380,15 @@ DEFER: @neg-digit
 
 PRIVATE>
 
+: base-digits> ( seq radix -- n )
+  [ swap [ * ] dip + ] curry 0 swap reduce ;
+
+: >base-digits ( n radix -- seq )
+  [ /mod ] curry [ dup 0 > ] swap produce nip reverse ;
+
+: digits> ( seq -- n ) 10 base-digits> ;
+: >digits ( n -- seq ) 10 >base-digits ;
+
 : string>number ( str -- n/f )
     10 <number-parse> [ @first-char ] require-next-digit ;
 
@@ -1026,25 +1035,3 @@ M: float >base
     } cond ;
 
 : # ( n -- ) number>string % ; inline
-
-ERROR: invalid-hex-string-length n ;
-
-: hex-string>bytes ( hex-string -- bytes )
-    dup length dup even? [ invalid-hex-string-length ] unless 2/ <byte-array> [
-        [
-            [ digit> ] 2dip over even? [
-                [ 16 * ] [ 2/ ] [ set-nth-unsafe ] tri*
-            ] [
-                [ 2/ ] [ [ + ] change-nth-unsafe ] bi*
-            ] if
-        ] curry each-index
-    ] keep ;
-
-: bytes>hex-string ( bytes -- hex-string )
-    dup length 2 * CHAR: 0 <string> [
-        [
-            [ 16 /mod [ >digit ] bi@ ]
-            [ 2 * dup 1 + ]
-            [ [ set-nth-unsafe ] curry bi-curry@ bi* ] tri*
-        ] curry each-index
-    ] keep ;

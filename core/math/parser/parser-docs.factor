@@ -1,5 +1,5 @@
 USING: byte-arrays help.markup help.syntax math
-math.parser.private prettyprint make sequences
+math.parser.private prettyprint kernel make sequences
 strings ;
 
 IN: math.parser
@@ -117,19 +117,64 @@ HELP: #
 { $values { "n" real } }
 { $description "Appends the string representation of a real number to the end of the sequence being constructed by " { $link make } "." } ;
 
-HELP: bytes>hex-string
-{ $values { "bytes" sequence } { "hex-string" string } }
-{ $description "Converts a sequence of bytes (integers in the range [0,255]) to a string of hex numbers in the range [00,ff]." }
-{ $examples
-    { $example "USING: math.parser prettyprint ;" "B{ 1 2 3 4 } bytes>hex-string ." "\"01020304\"" }
+HELP: >dec
+{ $values
+    { "n" integer }
+    { "str" string }
 }
-{ $notes "Numbers are zero-padded on the left." } ;
+{ $description "Converts an integer to its string representation in decimal." } ;
 
-HELP: hex-string>bytes
-{ $values { "hex-string" sequence } { "bytes" byte-array } }
-{ $description "Converts a sequence of hex numbers in the range [00,ff] to a sequence of bytes (integers in the range [0,255])." }
-{ $examples
-    { $example "USING: math.parser prettyprint ;" "\"cafebabe\" hex-string>bytes ." "B{ 202 254 186 190 }" }
-} ;
+HELP: dec>
+{ $values
+    { "str" string }
+    { "n/f" { $maybe integer } }
+}
+{ $description "Converts a string representing a decimal integer to an integer.
+Returns " { $link f } " if the string cannot be converted." } ;
 
-{ bytes>hex-string hex-string>bytes } related-words
+HELP: invalid-radix
+{ $values
+    { "radix" object }
+}
+{ $description "Throws an " { $link invalid-radix } " error." }
+{ $error-description "For the word it is used in, an invalid radix is one that
+does not exist in the domain of valid radixes. In many cases, for example,
+negative and floating point radixes are not allowed." } ;
+
+HELP: string>digits
+{ $values
+    { "str" string }
+    { "digits" object }
+}
+{ $description "Converts a string of digits represented in base 36 to a byte
+array (" { $link "byte-arrays" } ")." } ;
+
+HELP: >base-digits
+{ $values
+    { "n" integer } { "radix" object }
+    { "seq" sequence }
+}
+{ $description "Converts a real number to a list of its digits in the given"
+" radix. The result is a sequence of integer digits." } ;
+
+HELP: >digits
+{ $values
+    { "n" integer }
+    { "seq" sequence }
+}
+{ $description "Converts an integer to the sequence of its decimal digits." } ;
+
+HELP: base-digits>
+{ $values
+    { "seq" sequence } { "radix" object }
+    { "n" integer }
+}
+{ $description "Converts a sequence of digits (each 'digit' can be any "
+"positive integer) in a given radix to an integer." } ;
+
+HELP: digits>
+{ $values
+    { "seq" sequence }
+    { "n" integer }
+}
+{ $description "Converts a sequence of decimal digits to an integer." } ;

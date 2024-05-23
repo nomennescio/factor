@@ -76,6 +76,11 @@ CL_FLAGS = $(CL_FLAGS) /Zi /DFACTOR_DEBUG
 CL_FLAGS = $(CL_FLAGS) /DFACTOR_REPRODUCIBLE
 !ENDIF
 
+!IF DEFINED(LTO)
+LINK_FLAGS = $(LINK_FLAGS) /LTCG /OPT:ICF=2
+CL_FLAGS = $(CL_FLAGS) /GL /Gw /Gy /Zc:inline
+!ENDIF
+
 ML_FLAGS = /nologo /safeseh
 
 EXE_OBJS = vm\main-windows.obj vm\factor.res
@@ -123,7 +128,11 @@ DLL_OBJS = $(PLAF_DLL_OBJS) \
 	vm\tuples.obj \
 	vm\utilities.obj \
 	vm\vm.obj \
-	vm\words.obj
+	vm\words.obj \
+	vm\zstd.obj
+
+vm\zstd.obj: vm\zstd.cpp vm\zstd.hpp vm\zstd.c vm\zstd.h vm\master.hpp
+	cl /EHsc $(CL_FLAGS) /MP /Fovm/ /c vm\zstd.cpp
 
 # batch mode has ::
 .cpp.obj::

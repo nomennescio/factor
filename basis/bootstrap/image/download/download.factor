@@ -1,7 +1,7 @@
 ! Copyright (C) 2008, 2010 Slava Pestov.
 ! See https://factorcode.org/license.txt for BSD license.
 USING: assocs bootstrap.image checksums checksums.md5
-http.client http.download io.files kernel math.parser splitting
+hex-strings http.client http.download io.files kernel splitting
 urls ;
 IN: bootstrap.image.download
 
@@ -9,7 +9,7 @@ CONSTANT: download-url URL" https://downloads.factorcode.org/images/master/"
 
 : download-checksums ( -- alist )
     download-url "checksums.txt" >url derive-url http-get nip
-    split-lines [ " " split1 ] { } map>assoc ;
+    split-lines [ " " split1 ] map>alist ;
 
 : file-checksum ( image -- checksum )
     md5 checksum-file bytes>hex-string ;
